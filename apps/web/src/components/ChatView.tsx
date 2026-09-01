@@ -2513,7 +2513,6 @@ export default function ChatView(props: ChatViewProps) {
       ),
     [providerStatuses, settings],
   );
-<<<<<<< HEAD
   const { selectedProviderEntry, requestedDriverKind } = useMemo(
     () =>
       resolveComposerProviderSelection({
@@ -2553,13 +2552,19 @@ export default function ChatView(props: ChatViewProps) {
   const supportsConversationRollback =
     conversationProviderStatus !== null &&
     conversationProviderStatus.supportsConversationRollback !== false;
+  const sessionStatus = activeThread?.session?.status ?? null;
+  const previousSessionStatusRef = useRef(sessionStatus);
   const hasActiveCodexGoalSession =
     isServerThread &&
     selectedProvider === "codex" &&
     activeThread !== null &&
     activeThread !== undefined &&
     activeThread.session !== null &&
-    activeThread.session.status !== "stopped";
+    sessionStatus !== "stopped" &&
+    !(sessionStatus === "starting" && previousSessionStatusRef.current === "stopped");
+  useEffect(() => {
+    previousSessionStatusRef.current = sessionStatus;
+  }, [sessionStatus]);
   const codexGoal = useCodexGoal(
     hasActiveCodexGoalSession ? environmentId : null,
     hasActiveCodexGoalSession ? activeThreadId : null,

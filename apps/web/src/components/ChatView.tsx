@@ -2552,9 +2552,11 @@ export default function ChatView(props: ChatViewProps) {
   const supportsConversationRollback =
     conversationProviderStatus !== null &&
     conversationProviderStatus.supportsConversationRollback !== false;
-  const settledSessionStatusRef = useRef(activeThread?.session?.status ?? null);
   const sessionStatus = activeThread?.session?.status ?? null;
-  if (sessionStatus !== "starting") settledSessionStatusRef.current = sessionStatus;
+  const settledSessionStatusesRef = useRef<Record<string, typeof sessionStatus>>({});
+  const settledSessionStatus = settledSessionStatusesRef.current[activeThreadKey ?? ""] ?? null;
+  if (sessionStatus !== "starting")
+    settledSessionStatusesRef.current[activeThreadKey ?? ""] = sessionStatus;
   const hasActiveCodexGoalSession =
     isServerThread &&
     selectedProvider === "codex" &&
@@ -2562,7 +2564,10 @@ export default function ChatView(props: ChatViewProps) {
     activeThread !== undefined &&
     activeThread.session !== null &&
     sessionStatus !== "stopped" &&
-    !(sessionStatus === "starting" && settledSessionStatusRef.current === "stopped");
+    !(
+      sessionStatus === "starting" &&
+      (settledSessionStatus === "stopped" || settledSessionStatus === null)
+    );
   const codexGoal = useCodexGoal(
     hasActiveCodexGoalSession ? environmentId : null,
     hasActiveCodexGoalSession ? activeThreadId : null,
